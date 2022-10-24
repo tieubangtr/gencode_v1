@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Read Text File</title>
+</head>
+
+<body>
+    <label for="load">Input file</label>
+    <input type="file" name="load" id="load">
+    <br>
+    <input type="button" value="Gen class obj" onclick="Gen_Obj()" />
+    <br>
+    <input type="button" value="Gen detail" onclick="Gen_Detail()" />
+    <br>
+    <input type="button" value="Gen table" onclick="Gen_Table()" />
+    <br>
+    <input type="button" value="Get title" onclick="Get_Title()" />
+    <br>
+    <input type="button" value="Get export <#DT.STT>" onclick="Get_Export()" />
+    <br>
+    <input type="button" value="Tạo sắp xếp theo cột của tra cứu" onclick="Get_Sort_Column_Search()" />
+    <br>
+    <input type="button" value="Tạo chi tiết textbox->chữ" onclick="Detail_Textbox_To_Line()" />
+    <br>
+    <input type="button" value="Get Resource Dictionary" onclick="Gen_ResourceDictionary_v1()" />
+    <br>
+    <pre id="output"></pre>
+
+
+    <script type="text/javascript">
+        var resultString = "";
+        let lines = [];
+
+        document.getElementById('load')
+            .addEventListener('change', function () {
+                var fr = new FileReader();
+                fr.onload = function () {
+                    let modelName = 'Model';
+                    lines = this.result.split(/\r\n|\n/);
+                }
+
+                fr.readAsText(this.files[0]);
+            })
+
+        function Gen_Obj() {
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            for (var line = 0; line < lines.length - 1; line++) {
+
+                let title = lines[line].split("=")[0].trim(); //title
+                let prop = lines[line].split("=")[1].trim(); //property
+                let dataType = lines[line].split("=")[3].trim(); //date , number, string
+
+                //them summery
+                resultString += `
+                                        /// <summary>
+                                        /// ${title}
+                                        /// </summary>
+                                        `;
+                if (dataType == "number" || dataType == "decimal") {
+                    resultString += `public decimal ${prop} { get; set; }`;
+
+                } else if (dataType == "date" || dataType == "DateTime") {
+                    resultString += `public DateTime ${prop} { get; set; }`;
+
+                } else {
+                    resultString += `public string ${prop} { get; set; }`;
+                }
+
+                resultString += "\n";
+                console.log(line + " --> " + lines[line]);
+
+            }
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+
+        function Gen_Detail() {
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            for (var line = 0; line < lines.length - 1; line++) {
+                let first = lines[line].split("=")[0].trim();
+                let second = lines[line].split("=")[1].trim();
+                let dataType = lines[line].split("=")[3].trim(); //date , number, string
+
+                resultString += `<div class="col-lg-12">
+                                        <div class="flex-report">
+                                            <div class="title-report">${first}</div>
+                                            <div class="field-report">`;
+                if (dataType == "number" || dataType == "decimal") {
+                    resultString += `<input class="ip-popup" type="text" value="@item.${second}.ToNumberStringN10()" readonly>`;
+                } else if (dataType == "date" || dataType == "DateTime") {
+                    resultString += `<input class="ip-popup" type="text" value="@item.${second}.ToDateStringN0()" readonly>`;
+                } else {
+                    resultString += `<input class="ip-popup" type="text" value="@item.${second}" readonly>`;
+                }
+                resultString += `
+                                              </div>
+                                        </div>
+                                    </div>`;
+                resultString += "\n";
+                console.log(line + " --> " + lines[line]);
+
+            }
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+
+        function Gen_Table() {
+            document.getElementById('output').textContent = '';
+            resultString = ""
+            //Generate table
+            var resultString1 = ""; //render-table-header
+            var resultString2 = ""; //render-table-body
+            const modelName = "item";
+            for (var line = 0; line < lines.length - 1; line++) {
+                //first = name as text
+                //second = name as object
+                //third = data-sort ?
+                //forth = data-type
+                console.log(lines[line].split("="));
+                let first = lines[line].split("=")[0].trim();
+                let second = lines[line].split("=")[1].trim();
+                let third = lines[line].split("=")[2].trim() == 1 ? `data-sort="${second}"` : "";
+                let forth = lines[line].split("=")[3].trim();
+                resultString1 += `<th ${third}>${first}</th>` + "\n";
+                resultString2 += `<td ${getAlign(forth)}>${getRenderItem(modelName, second, forth)}</td>` + "\n";
+            }
+            resultString = `<div class="over-flow-x">
+                                    <div class="wrapper-editor scroll-tbl tbl-record">
+                                        <table id="test-tb" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    ${resultString1}
+                                                    <th>Chức năng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (listData != null && listData.Count > 0)
+                                                {
+                                                    foreach (var item in listData)
+                                                    {
+                                                        <tr>
+                                                            ${resultString2}
+                                                            <td class="text-center">
+                                                                <a href="javascript:;" data-toggle="modal" data-target="#formViewUser" class="btn-function" onclick="gotoView(@item.Order_Id);">
+                                                                    <span>
+                                                                        <img class="imgbefore-hv" src="~/bidding_lib/img/icon-info.svg" alt="img">
+                                                                    </span>
+                                                                    <div class="name-function-fix">Xem</div>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td colspan="26">Không có dữ liệu</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>`;
+            resultString += "\n";
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+
+        function Get_Title() {
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            for (var line = 0; line < lines.length - 1; line++) {
+
+                let title = lines[line].split("=")[0].trim(); //title
+                let prop = lines[line].split("=")[1].trim(); //property
+                let dataType = lines[line].split("=")[3].trim(); //date , number, string
+
+                //them summery
+                resultString += `${title}\n`;
+            }
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+
+        function Get_Export() {
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            for (var line = 0; line < lines.length - 1; line++) {
+
+                let title = lines[line].split("=")[0].trim(); //title
+                let prop = lines[line].split("=")[1].trim(); //property
+                let dataType = lines[line].split("=")[3].trim(); //date , number, string
+
+                //them summery
+                if (dataType == "date" || dataType == "DateTime") {
+                    resultString += `<#if(<#DT.${prop}>=0;;<#DT.${prop}>)>\n`;
+                } else {
+                    resultString += `<#DT.${prop}>\n`;
+                }
+            }
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+        // bangtt
+        function Gen_ResourceDictionary_v1(){
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            element_Arr = lines[0].split(",");
+            for(let i = 0; i < element_Arr.length; i++){
+                resultString += `<sys:String x:Key="issueqttymain">${element_Arr[i].trim()}</sys:String>\n`;
+            }
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+        // bangtt
+        function Gen_DataGridTextColumn(){
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            for (var line = 0; line < lines.length - 1; line++) {
+
+                let title = lines[line].split("=")[0].trim(); //title
+                let prop = lines[line].split("=")[1].trim(); //property
+                let dataType = lines[line].split("=")[3].trim(); //date , number, string
+
+                //them summery
+                if (dataType == "date" || dataType == "DateTime") {
+                    resultString += `<#if(<#DT.${prop}>=0;;<#DT.${prop}>)>\n`;
+                } else {
+                    resultString += `<#DT.${prop}>\n`;
+                }
+            }
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+
+        function Detail_Textbox_To_Line() {
+            document.getElementById('output').textContent = '';
+            resultString = ""
+            //Generate table
+            var resultString1 = ""; //render-table-header
+            var resultString2 = ""; //render-table-body
+            const modelName = "item";
+            for (var line = 0; line < lines.length - 1; line++) {
+                //<label>abc</label> ---> tách lấy abc
+                var _idx_from = lines[line].indexOf('<label>'); 
+                var _idx_to = lines[line].indexOf('</label>');
+                if(_idx_from >= 0 && _idx_to > 0) {
+                    var _cl_name = lines[line].substring(_idx_from,_idx_to).replace('<label>','').trim();
+
+                    resultString1 += `<div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-5"><div class="title-info">${_cl_name}`;
+                }
+                
+                var _idx_value_from = lines[line].indexOf('value=\"'); 
+                var _idx_value_to = lines[line].indexOf('\" class');
+                if(_idx_value_from > 0 && _idx_value_to> 0){
+                    var _value = lines[line].substring(_idx_value_from,_idx_value_to).replace('value=\"','').trim();
+                    resultString1+=`</div></div>
+                                            <div class="col-lg-7"><div class="value-info">${_value}</div></div>
+                                        </div>
+                                    </div>
+                                    </div>` + "\n";
+                }
+            }
+            resultString = `${resultString1}`;
+            resultString += "\n";
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+
+
+        function getAlign(dataType) {
+            let result = "";
+            if (dataType == "number" || dataType == "decimal") {
+                result = `class="text-right"`;
+            } else if (dataType == "date" || dataType == "DateTime") {
+                result = `class="text-center"`;
+            } else {
+                result = ``;
+            }
+            return result;
+        }
+
+        function getRenderItem(modelName, propName, dataType) {
+            let result = "";
+            if (dataType == "number" || dataType == "decimal") {
+                result = `@${modelName}.${propName}.ToString("#,##0")`;
+            } else if (dataType == "date" || dataType == "DateTime") {
+                result = `@${modelName}.${propName}.ToDateStringN0()`;
+            } else {
+                result = `@${modelName}.${propName}`;
+            }
+            return result;
+        }
+
+        function copyStringToClipboard(str) {
+            // Create new element
+            var el = document.createElement('textarea');
+            // Set value (string to be copied)
+            el.value = str;
+            // Set non-editable to avoid focus and move outside of view
+            el.setAttribute('readonly', '');
+            el.style = { position: 'absolute', left: '-9999px' };
+            document.body.appendChild(el);
+            // Select text inside element
+            el.select();
+            // Copy text to clipboard
+            document.execCommand('copy');
+            // Remove temporary element
+            document.body.removeChild(el);
+        }
+
+        function Get_Sort_Column_Search() {
+
+            //<td>@item.Foundation_No</td>
+            //<td class="text-center">@item.Foundation_Date.ToDateStringN0()</td>
+            
+            
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            for (var line = 0; line < lines.length ; line++) {
+
+                //chuyen </td> thanh .</td>
+                let temp = lines[line];
+                console.log(temp);
+                let s = temp.slice(0, temp.indexOf('</td>')) + "." + temp.slice(temp.indexOf('</td>'));
+                let prop_idx_from = s.indexOf('.'); //item.Foundation_No.</td>
+                let prop_idx_to = s.indexOf('.',prop_idx_from+1)
+                console.log(s);
+                console.log('prop_idx_from: ' + prop_idx_from);
+                console.log('prop_idx_to: ' + prop_idx_to);
+                //substring property can lay: 
+                let property = s.substring(prop_idx_from+1,prop_idx_to);
+
+                //them summery
+                resultString += `data-sort="${property}"\n`;
+                console.log(line + " --> " + lines[line]);
+                debugger;
+
+            }
+            console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+    </script>
+</body>
+
+</html>
