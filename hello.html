@@ -8,6 +8,8 @@
 <body>
     <label for="load">Input file</label>
     <input type="file" name="load" id="load">
+    <label>Common Number Input</label>
+    <input type="number" name="load" id="common-number-inpt">
     <br>
     <input type="button" value="Gen class obj" onclick="Gen_Obj()" />
     <br>
@@ -21,10 +23,13 @@
     <br>
     <input type="button" value="Tạo sắp xếp theo cột của tra cứu" onclick="Get_Sort_Column_Search()" />
     <br>
-    <label>trung do</label>
     <input type="button" value="Tạo chi tiết textbox->chữ" onclick="Detail_Textbox_To_Line()" />
     <br>
     <input type="button" value="Get Resource Dictionary" onclick="Gen_ResourceDictionary_v1()" />
+    <br>
+    <input type="button" value="Get DataGridTextColumn" onclick="Gen_DataGridTextColumn_v1()" />
+    <br>
+    <input type="button" value="Get WPF View" onclick="Gen_Wpf_View()" />
     <br>
     <pre id="output"></pre>
 
@@ -229,21 +234,18 @@
             alert("Done!");
         }
         // bangtt
-        function Gen_DataGridTextColumn(){
+        function Gen_DataGridTextColumn_v1(){
             document.getElementById('output').textContent = '';
             resultString = "";
             for (var line = 0; line < lines.length - 1; line++) {
 
-                let title = lines[line].split("=")[0].trim(); //title
-                let prop = lines[line].split("=")[1].trim(); //property
-                let dataType = lines[line].split("=")[3].trim(); //date , number, string
-
-                //them summery
-                if (dataType == "date" || dataType == "DateTime") {
-                    resultString += `<#if(<#DT.${prop}>=0;;<#DT.${prop}>)>\n`;
-                } else {
-                    resultString += `<#DT.${prop}>\n`;
-                }
+                let binding = lines[line].split("=")[0].trim(); 
+                let dynamicResource = lines[line].split("=")[1].trim(); 
+                resultString += `<DataGridTextColumn Binding="{Binding ${binding}}" IsReadOnly="True" Width="160" ElementStyle="{DynamicResource ElementStyle_VerticalAlignment}">
+                                    <DataGridTextColumn.Header>
+                                        <Label Content="${dynamicResource}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn> \n`;
             }
             console.log(resultString)
             document.getElementById('output').textContent = resultString;
@@ -361,6 +363,65 @@
 
             }
             console.log(resultString)
+            document.getElementById('output').textContent = resultString;
+            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+
+        function Gen_Wpf_View(){
+            var columns = document.getElementById('common-number-inpt').value;
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            var rowDefinitions = "";
+            var columnDefinitions = "";
+            
+            //Render RowDefinition
+            var numberOfRows = Math.floor(lines / 2);
+            for(let i = 0; i < numberOfRows; i++){
+                rowDefinitions += `<RowDefinition Height="25"/> \n`;
+            }
+
+            //Render ColumnDefinition
+            var numberOfColumns = 1;
+            if(columns == null || columns == 0 || columns.toString() == ""){
+                numberOfColumns = 2;
+            }else{
+                numberOfColumns = columns;
+            }
+            for(let i = 0; i < (numberOfRows * 2); i++){
+                columnDefinitions += `<ColumnDefinition/> \n`;
+            }
+
+           
+            //Render label and element
+            var elementResult = "";
+            for(let i = 0; i < lines.length; i++){
+                var labelName = lines[i].split("=")[0].trim();
+                var elementType = lines[i].split("=")[1].trim();
+                var elementName = lines[i].split("=")[2].trim();
+                for(let j = 0; j < numberOfColumns; j++){
+                    for(let k = 0; k < numberOfRows; k++){
+                        elementResult += `<Label Content="${labelName}" Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${i + 1}" VerticalAlignment="Center" /> \n`;
+                        if(elementType == "textbox"){
+                            elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/>`
+                        }else if(elementType == "combobox"){
+                            elementResult += `<ComboBox IsHitTestVisible="False" Focusable="False" Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/> \n`;
+                        }
+                        elementResult += "\n";
+                    }
+                }
+            }
+            //Combine
+            resultString += `<Grid>
+                                <Grid.RowDefinitions>
+                                    ${rowDefinitions}
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    ${columnDefinitions}
+                                </Grid.ColumnDefinitions>
+                                ${elementResult}
+                            </Grid>`;
+
             document.getElementById('output').textContent = resultString;
             copyStringToClipboard(resultString);
             alert("Done!");
