@@ -1,0 +1,42 @@
+Mã trái phiếu = Textbox = Symbol = M
+Tên trái phiếu = Textbox = Name = M
+Trạng thái GD = Combobox = Is_Listed = M
+Trạng thái HQ/KHQ = Combobox = Dividend_Status = M
+Bảng GD = Combobox = Board_Name = M
+TCPH = Combobox = Issuer_Name = M
+Tiền tệ = Combobox = Accycde = M
+Mệnh giá = Textbox = Par_Value = M
+Giá tham chiếu = Textbox = Reference_Price = M
+Ngày phát hành = Date = Issuedate = M
+Ngày TL DN lần đầu tiên = Date = First_Int_Date = M
+Ngày đáo hạn = Date = Maturitydate = M
+Ngày GD đầu tiên = Date = ListingDate = O
+Ngày GD cuối cùng = Date = Delistingdate = M
+Đối tượng được GD = Combobox = Allowed_Trading_Subject = M
+Kỳ hạn = Textbox = Bond_Period = M
+Đơn vị kỳ hạn = Combobox = Period_Unit = M
+Kỳ hạn còn lại = Textbox = Period_Remain = C
+Phương thức thanh toán gốc = Combobox = Principal_Pay_Method = M
+Lãi suất Coupon(%/năm) = Textbox = Interest_Rate = M
+Loại hình trả lãi = Combobox = Interest_Type = M
+Phương thức thanh toán lãi = Combobox = Interest_Payment_Type = M
+Kiểu trả lãi = Combobox = Interest_Coupon_Type = M
+Loại lãi suất = Combobox = Interest_Rate_Type = M
+Kỳ hạn trả lãi = Textbox = Interest_Period = M
+Đơn vị kỳ hạn trả lãi = Combobox = Interest_Period_Unit = M
+TP thường/TP xanh = Combobox = Bond_Type = M
+Là trái phiếu chuyển đổi = Checkbox = Bond_Convertible = O
+Trái phiếu kèm chứng quyền = Checkbox = Bond_Cw = O
+Trái phiếu bảo đảm = Checkbox = Bond_Guarantee = O
+Hình thức bảo đảm = Multiple select = Guarantee_Type = M
+Tài sản đảm bảo = Textbox = Guarantee_Name = M
+Định mức tín nhiệm = Textbox = Credit_Rate = O
+Mua lại/ Hoán đổi = Combobox = Buyback_Or_Swap = M
+KL phát hành = Textbox = Issueqtty = M
+KL lưu hành = Textbox = Circulateqtty = M
+KLNY = Textbox = Listingqtty = M
+Bộ quy định GD = Combobox = Trading_State_Name = O
+Biên độ dao động giá của GD khớp lệnh = Combobox = Pending = M
+Biên độ dao động giá của GD Outright = Combobox = Pending = M
+Kết cấu phiên = Combobox = Schedule_Rule_Name = O
+Bộ lịch GD = Combobox = Trading_Calendar_Name  = O

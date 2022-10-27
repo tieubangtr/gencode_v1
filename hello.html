@@ -31,6 +31,8 @@
     <br>
     <input type="button" value="Get WPF View" onclick="Gen_Wpf_View()" />
     <br>
+    <input type="button" value="Get WPF Insert" onclick="Gen_Wpf_Insert()" />
+    <br>
     <pre id="output"></pre>
 
 
@@ -375,43 +377,115 @@
             var rowDefinitions = "";
             var columnDefinitions = "";
             
-            //Render RowDefinition
-            var numberOfRows = Math.floor(lines / 2);
-            for(let i = 0; i < numberOfRows; i++){
-                rowDefinitions += `<RowDefinition Height="25"/> \n`;
-            }
-
             //Render ColumnDefinition
             var numberOfColumns = 1;
-            if(columns == null || columns == 0 || columns.toString() == ""){
+            if(columns == "" || columns.toString() == ""){
                 numberOfColumns = 2;
             }else{
                 numberOfColumns = columns;
             }
-            for(let i = 0; i < (numberOfRows * 2); i++){
+            for(let i = 0; i < (numberOfColumns * 2); i++){
                 columnDefinitions += `<ColumnDefinition/> \n`;
             }
 
-           
+            //Render RowDefinition
+            var numberOfRows = Math.ceil(lines.length / numberOfColumns);
+            for(let i = 0; i < numberOfRows; i++){
+                rowDefinitions += `<RowDefinition Height="28"/> \n`;
+            }
+            //Render load_cbo method
+            var loadCbo = "";
+            //Render load_data method 
+            var loadData = "";
+            //Render check_validate method
+            var checkValidate = "";
+            //Render submit_data method
+            var submitData = "";
+            //Ten mac dinh cua object chua du lieu 
+            var defaultObjectName = "objView";
             //Render label and element
             var elementResult = "";
+            var j = 0;
+            var k = 0;
+            //Set height cho TextBox de khop voi default height cua ComboBox
+            var defaultTxtHeight = `Height="22"`;
+            //Set margin cho CheckBox de thang hang voi Label
+            var defaultCheckBoxMargin = `Margin="0,5,0,0"`;
             for(let i = 0; i < lines.length; i++){
-                var labelName = lines[i].split("=")[0].trim();
-                var elementType = lines[i].split("=")[1].trim();
-                var elementName = lines[i].split("=")[2].trim();
-                for(let j = 0; j < numberOfColumns; j++){
-                    for(let k = 0; k < numberOfRows; k++){
-                        elementResult += `<Label Content="${labelName}" Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${i + 1}" VerticalAlignment="Center" /> \n`;
-                        if(elementType == "textbox"){
-                            elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/>`
-                        }else if(elementType == "combobox"){
-                            elementResult += `<ComboBox IsHitTestVisible="False" Focusable="False" Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/> \n`;
-                        }
-                        elementResult += "\n";
+                if(lines[i].toString() !== ''){
+                    var labelName = lines[i].split("=")[0].trim();
+                    var elementType = lines[i].split("=")[1].trim().toLowerCase();
+                    var elementNameRaw = lines[i].split("=")[2].trim();
+                    var elementName = "";
+                    //XAML Grid data
+                    if(k >= numberOfRows){
+                        k = 0;
+                        j = j + 2;
+                    }
+                    elementResult += `<Label Content="${labelName}: " Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${i + 1}" VerticalAlignment="Center" /> \n`;
+                    if(elementType == "textbox"){
+                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`
+                    }else if(elementType == "combobox"){
+                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<ComboBox IsHitTestVisible="False" Focusable="False" Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/> \n`;
+                    }else if(elementType == "checkbox"){
+                        elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<CheckBox IsHitTestVisible="False" Grid.Row="${k}" Grid.Column="${j + 1}" Height="16" HorizontalAlignment="Left" Name="${elementName}" VerticalAlignment="Center" IsTabStop="False" ${defaultCheckBoxMargin}/>`;
+                    }else if(elementType == "date"){
+                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`
+                    }else if(elementType == "multiple select"){
+                        elementName = "lbox" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<ListBox IsHitTestVisible="False" Grid.Row="${k}" Grid.Column="${j + 1}" Name="${elementName}" SelectionMode="Multiple" />`
+                    }
+                    else{
+                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`
+                    }
+                    elementResult += "\n \n";
+                    k++;
+
+                    //Load_cbo
+                    if(elementType == "combobox"){
+                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
+                        loadCbo += `//${elementName}
+                        List<AllcodeInfo> _allcodecon_${i} = AllCodeController.AllCode_GetBy_CdNameCdType("TS_SYMBOL", "STATUS");
+                        ${elementName}.ItemsSource = _allcodecon${i};
+                        ${elementName}.DisplayMemberPath = "Code";
+                        ${elementName}.SelectedValuePath = "Id"; 
+                        \n`;
+                    }
+
+                    //Load_data
+                    if(elementType == "textbox"){
+                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                        loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
+                    }else if(elementType == "combobox"){
+                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
+                        loadData += `${elementName}.SelectedValue = ${defaultObjectName}.${elementNameRaw}; \n`;
+                    }else if(elementType == "checkbox"){
+                        elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
+                        loadData += `if(${defaultObjectName}.${elementNameRaw}.ToString() == "0"//Condition here){
+                                        ${elementName}.IsChecked = true;
+                                    }else{
+                                        ${elementName}.IsChecked = false;
+                                    } \n`;
+                    }else if(elementType == "date"){
+                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                        loadData += `${elementName}.Text = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
+                    }else if(elementType == "multiple select"){
+                        elementName = "lbox" + elementNameRaw.replaceAll('_', '');
+                        loadData += `${elementName}.ItemSource = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
+                    }
+                    else{
+                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                        loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
                     }
                 }
             }
             //Combine
+            //Grid
             resultString += `<Grid>
                                 <Grid.RowDefinitions>
                                     ${rowDefinitions}
@@ -421,9 +495,164 @@
                                 </Grid.ColumnDefinitions>
                                 ${elementResult}
                             </Grid>`;
+            //Load_data
+            resultString += `\n \n --------------------Load_data---------------------- \n \n`
+
+            resultString += loadData + "\n";
+
+            //Load_cbo
+            resultString += `\n \n --------------------Load_cbo---------------------- \n \n`
+
+            resultString += loadCbo + "\n";
 
             document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
+            alert("Done!");
+        }
+
+        function Gen_Wpf_Insert(){
+            var columns = document.getElementById('common-number-inpt').value;
+            document.getElementById('output').textContent = '';
+            resultString = "";
+            var rowDefinitions = "";
+            var columnDefinitions = "";
+            
+            //Render ColumnDefinition
+            var numberOfColumns = 1;
+            if(columns == "" || columns.toString() == ""){
+                numberOfColumns = 2;
+            }else{
+                numberOfColumns = columns;
+            }
+            for(let i = 0; i < (numberOfColumns * 2); i++){
+                columnDefinitions += `<ColumnDefinition/> \n`;
+            }
+
+            //Render RowDefinition
+            var numberOfRows = Math.ceil(lines.length / numberOfColumns);
+            for(let i = 0; i < numberOfRows; i++){
+                rowDefinitions += `<RowDefinition Height="28"/> \n`;
+            }
+            //Required field
+            var defaultRequiredField = `<TextBox Foreground="Red" BorderBrush="Transparent" Background="Transparent">*</TextBox>`;
+            //Render load_cbo method
+            var loadCbo = "";
+            //Render load_data method 
+            var loadData = "";
+            //Ten mac dinh cua object chua du lieu 
+            var defaultObjectName = "objView";
+            //Render label and element
+            var elementResult = "";
+            var j = 0;
+            var k = 0;
+            //Set height cho TextBox de khop voi default height cua ComboBox
+            var defaultTxtHeight = `Height="22"`;
+            //Set margin cho CheckBox de thang hang voi Label
+            var defaultCheckBoxMargin = `Margin="0,5,0,0"`;
+            for(let i = 0; i < lines.length; i++){
+                if(lines[i].toString() !== ''){
+                    var labelName = lines[i].split("=")[0].trim();
+                    var elementType = lines[i].split("=")[1].trim().toLowerCase();
+                    var elementNameRaw = lines[i].split("=")[2].trim();
+                    var requiredField = lines[i].split("=")[3].trim() == "M" ? defaultRequiredField : "";
+                    var elementName = "";
+                    //XAML Grid data
+                    if(k >= numberOfRows){
+                        k = 0;
+                        j = j + 2;
+                    }
+                    elementResult += `<!--${labelName}-->
+                                    <Label Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${i + 1}" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBox BorderBrush="Transparent" Background="Transparent">${labelName}</TextBox>
+                                            ${requiredField}
+                                        </StackPanel>
+                                    </Label> \n`;
+                    if(elementType == "textbox"){
+                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<TextBox Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight} TabIndex="${i}"/>`
+                    }else if(elementType == "combobox"){
+                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<ComboBox Focusable="False" Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/> \n`;
+                    }else if(elementType == "checkbox"){
+                        elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<CheckBox Grid.Row="${k}" Grid.Column="${j + 1}" Height="16" HorizontalAlignment="Left" Name="${elementName}" VerticalAlignment="Center" IsTabStop="False" ${defaultCheckBoxMargin}/>`;
+                    }else if(elementType == "date"){
+                        elementName = "dtp" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<DatePicker Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Right" Name="${elementName}" 
+                                                VerticalAlignment="Center" Width="26" Height="23" SelectedDateChanged="datetimePicker_SelectedDateChanged"
+                                                PreviewKeyDown="DatePicker_Keydown" Mouse.PreviewMouseDown="datetimePicker_PreviewMouseDown"
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>`
+                    }else if(elementType == "multiple select"){
+                        elementName = "lbox" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<ListBox Grid.Row="${k}" Grid.Column="${j + 1}" Name="${elementName}" SelectionMode="Multiple" />`
+                    }
+                    else{
+                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                        elementResult += `<TextBox  Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`
+                    }
+                    elementResult += "\n \n";
+                    k++;
+
+                    //Load_cbo
+                    if(elementType == "combobox"){
+                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
+                        loadCbo += `//${elementName}
+                        List<AllcodeInfo> _allcodecon_${i} = AllCodeController.AllCode_GetBy_CdNameCdType("CB_SYMBOL", "${elementNameRaw.toUpperCase()}");
+                        ${elementName}.ItemsSource = _allcode${elementNameRaw.replaceAll('_', '') + "_Source"};
+                        ${elementName}.DisplayMemberPath = "Content";
+                        ${elementName}.SelectedValuePath = "CdVal"; 
+                        \n`;
+                    }
+
+                    // //Load_data
+                    // if(elementType == "textbox"){
+                    //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                    //     loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
+                    // }else if(elementType == "combobox"){
+                    //     elementName = "cbo" + elementNameRaw.replaceAll('_', '');
+                    //     loadData += `${elementName}.SelectedValue = ${defaultObjectName}.${elementNameRaw}; \n`;
+                    // }else if(elementType == "checkbox"){
+                    //     elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
+                    //     loadData += `if(${defaultObjectName}.${elementNameRaw}.ToString() == "0"//Condition here){
+                    //                     ${elementName}.IsChecked = true;
+                    //                 }else{
+                    //                     ${elementName}.IsChecked = false;
+                    //                 } \n`;
+                    // }else if(elementType == "date"){
+                    //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                    //     loadData += `${elementName}.Text = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
+                    // }else if(elementType == "multiple select"){
+                    //     elementName = "lbox" + elementNameRaw.replaceAll('_', '');
+                    //     loadData += `${elementName}.ItemSource = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
+                    // }
+                    // else{
+                    //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
+                    //     loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
+                    // }
+                }
+            }
+            //Combine
+            //Grid
+            resultString += `<Grid>
+                                <Grid.RowDefinitions>
+                                    ${rowDefinitions}
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    ${columnDefinitions}
+                                </Grid.ColumnDefinitions>
+                                ${elementResult}
+                            </Grid>`;
+            //Load_data
+            // resultString += `\n \n --------------------Load_data---------------------- \n \n`
+
+            // resultString += loadData + "\n";
+
+            //Load_cbo
+            resultString += `\n \n --------------------Load_cbo---------------------- \n \n`
+
+            resultString += loadCbo + "\n";
+
+            document.getElementById('output').textContent = resultString;
             alert("Done!");
         }
     </script>
