@@ -37,6 +37,6 @@ KL lưu hành = Textbox = Circulateqtty = M
 KLNY = Textbox = Listingqtty = M
 Bộ quy định GD = Combobox = Trading_State_Name = O
 Biên độ dao động giá của GD khớp lệnh = Combobox = Pending = M
-Biên độ dao động giá của GD Outright = Combobox = Pending = M
+Biên độ dao động giá của GD Outright = Combobox = Pending_2 = M
 Kết cấu phiên = Combobox = Schedule_Rule_Name = O
 Bộ lịch GD = Combobox = Trading_Calendar_Name  = O

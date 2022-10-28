@@ -449,7 +449,7 @@
                     //Load_cbo
                     if(elementType == "combobox"){
                         elementName = "cbo" + elementNameRaw.replaceAll('_', '');
-                        loadCbo += `//${elementName}
+                        loadCbo += `//${elementName + " - " + labelName}
                         List<AllcodeInfo> _allcodecon_${i} = AllCodeController.AllCode_GetBy_CdNameCdType("TS_SYMBOL", "STATUS");
                         ${elementName}.ItemsSource = _allcodecon${i};
                         ${elementName}.DisplayMemberPath = "Code";
@@ -495,6 +495,8 @@
                                 </Grid.ColumnDefinitions>
                                 ${elementResult}
                             </Grid>`;
+            
+            copyStringToClipboard(resultString);
             //Load_data
             resultString += `\n \n --------------------Load_data---------------------- \n \n`
 
@@ -533,7 +535,7 @@
                 rowDefinitions += `<RowDefinition Height="28"/> \n`;
             }
             //Required field
-            var defaultRequiredField = `<TextBox Foreground="Red" BorderBrush="Transparent" Background="Transparent">*</TextBox>`;
+            var defaultRequiredField = `<TextBox Foreground="Red" BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" BorderThickness="0">*</TextBox>`;
             //Render load_cbo method
             var loadCbo = "";
             //Render load_data method 
@@ -553,6 +555,7 @@
                     var labelName = lines[i].split("=")[0].trim();
                     var elementType = lines[i].split("=")[1].trim().toLowerCase();
                     var elementNameRaw = lines[i].split("=")[2].trim();
+                    var isRequired = lines[i].split("=")[3].trim() == "M" ? true : false;
                     var requiredField = lines[i].split("=")[3].trim() == "M" ? defaultRequiredField : "";
                     var elementName = "";
                     //XAML Grid data
@@ -563,8 +566,9 @@
                     elementResult += `<!--${labelName}-->
                                     <Label Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${i + 1}" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBox BorderBrush="Transparent" Background="Transparent">${labelName}</TextBox>
+                                            <TextBox BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" BorderThickness="0">${labelName}</TextBox>
                                             ${requiredField}
+                                            <TextBox BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" BorderThickness="0">:</TextBox>
                                         </StackPanel>
                                     </Label> \n`;
                     if(elementType == "textbox"){
@@ -572,14 +576,14 @@
                         elementResult += `<TextBox Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight} TabIndex="${i}"/>`
                     }else if(elementType == "combobox"){
                         elementName = "cbo" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<ComboBox Focusable="False" Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/> \n`;
+                        elementResult += `<ComboBox Focusable="False" IsEditable="True" IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" Text="-- Chọn ${labelName} --"/> \n`;
                     }else if(elementType == "checkbox"){
                         elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
                         elementResult += `<CheckBox Grid.Row="${k}" Grid.Column="${j + 1}" Height="16" HorizontalAlignment="Left" Name="${elementName}" VerticalAlignment="Center" IsTabStop="False" ${defaultCheckBoxMargin}/>`;
                     }else if(elementType == "date"){
                         elementName = "dtp" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<DatePicker Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Right" Name="${elementName}" 
-                                                VerticalAlignment="Center" Width="26" Height="23" SelectedDateChanged="datetimePicker_SelectedDateChanged"
+                        elementResult += `<DatePicker Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Left" Name="${elementName}" 
+                                                VerticalAlignment="Center" Width="150" SelectedDateChanged="datetimePicker_SelectedDateChanged"
                                                 PreviewKeyDown="DatePicker_Keydown" Mouse.PreviewMouseDown="datetimePicker_PreviewMouseDown"
                                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>`
                     }else if(elementType == "multiple select"){
@@ -597,12 +601,38 @@
                     if(elementType == "combobox"){
                         elementName = "cbo" + elementNameRaw.replaceAll('_', '');
                         loadCbo += `//${elementName}
-                        List<AllcodeInfo> _allcodecon_${i} = AllCodeController.AllCode_GetBy_CdNameCdType("CB_SYMBOL", "${elementNameRaw.toUpperCase()}");
-                        ${elementName}.ItemsSource = _allcode${elementNameRaw.replaceAll('_', '') + "_Source"};
+                        List<AllCodeInfo> _allcode${elementNameRaw.replaceAll('_', '') + "_Source"} =DBMemory.AllCode_GetBy_CdNameCdType("CB_SYMBOL", "${elementNameRaw.toUpperCase()}");
+                        ${elementName}.ItemsSource =  _allcode${elementNameRaw.replaceAll('_', '') + "_Source"};
                         ${elementName}.DisplayMemberPath = "Content";
                         ${elementName}.SelectedValuePath = "CdVal"; 
                         \n`;
                     }
+
+                    //Check_Validate
+        //             if(isRequired){
+        //                 if(elementType == "textbox"){
+        //                     resultString += `//${labelName}
+        //                                     if (${elementName}.Text.Trim() == "")
+        //                                     {
+        //                                         NoteBox.Show("${labelName} không được để trống", "", NoteBoxLevel.Error);
+        //                                         ${elementName}.Focus();
+        //                                         return false;
+        //                                     }`;
+        //                 }else if(elementType == "combobox"){
+        //                     if (cboIssuerID.SelectedItem == null)
+        // //    //    {
+        // //    //        NoteBox.Show(Common.Ultil.GetStringLeng("emptycboIssuer"), "", NoteBoxLevel.Error);
+        // //    //        cboIssuerID.Focus();
+        // //    //        return false;
+        // //    //    }
+        //                 }else if(elementType == "checkbox"){
+        //                 }else if(elementType == "date"){
+        //                 }else if(elementType == "multiple select"){
+                            
+        //                 }else{
+
+        //                 }
+        //             }
 
                     // //Load_data
                     // if(elementType == "textbox"){
