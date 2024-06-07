@@ -1,145 +1,153 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>Read Text File</title>
-</head>
+  </head>
 
-<body>
+  <body>
+    <div style="margin-bottom: 50px">
+      <labe>TVSC Param</labe>
+      <textarea id="txtTVSC" style="width: 500px; height: 100px"> </textarea>
+      <div><button onclick="JustCopy()">JustCopy</button></div>
+      <div><button onclick="Gen_FromQuery()">Gen_FromQuery</button></div>
+      <div><button onclick="GenStringToDateTime()">GenStringToDateTime</button></div>
+      <div><button onclick="GenLogMessage()">GenLogMessage</button></div>
+      <div><button onclick="GenParamSendToDA()">GenParamSendToDA</button></div>
+      <div><button onclick="GenAddParmeter()">GenAddParmeter</button></div>
+    </div>
+
     <label for="load">Input file</label>
-    <input type="file" name="load" id="load">
+    <input type="file" name="load" id="load" />
     <label>Common Number Input</label>
-    <input type="number" name="load" id="common-number-inpt">
-    <br>
+    <input type="number" name="load" id="common-number-inpt" />
+
+    <br />
     <input type="button" value="Gen class obj" onclick="Gen_Obj()" />
-    <br>
+    <br />
     <input type="button" value="Gen detail" onclick="Gen_Detail()" />
-    <br>
+    <br />
     <input type="button" value="Gen table" onclick="Gen_Table()" />
-    <br>
+    <br />
     <input type="button" value="Get title" onclick="Get_Title()" />
-    <br>
+    <br />
     <input type="button" value="Get export <#DT.STT>" onclick="Get_Export()" />
-    <br>
+    <br />
     <input type="button" value="Tạo sắp xếp theo cột của tra cứu" onclick="Get_Sort_Column_Search()" />
-    <br>
+    <br />
     <input type="button" value="Tạo chi tiết textbox->chữ" onclick="Detail_Textbox_To_Line()" />
-    <br>
+    <br />
     <input type="button" value="Get Resource Dictionary" onclick="Gen_ResourceDictionary_v1()" />
-    <br>
+    <br />
     <input type="button" value="Get DataGridTextColumn" onclick="Gen_DataGridTextColumn_v1()" />
-    <br>
+    <br />
     <input type="button" value="Get WPF View" onclick="Gen_Wpf_View()" />
-    <br>
+    <br />
     <input type="button" value="Get WPF Insert" onclick="Gen_Wpf_Insert()" />
-    <br>
+    <br />
+    <input type="button" value="WordToExcel_1" onclick="WordToExcel_1()" />
+    <br />
+    <input type="button" value="gen_change_view" onclick="gen_change_view()" />
+    <br />
     <pre id="output"></pre>
 
-
     <script type="text/javascript">
-        var resultString = "";
-        let lines = [];
+      var resultString = "";
+      let lines = [];
 
-        document.getElementById('load')
-            .addEventListener('change', function () {
-                var fr = new FileReader();
-                fr.onload = function () {
-                    let modelName = 'Model';
-                    lines = this.result.split(/\r\n|\n/);
-                }
+      document.getElementById("load").addEventListener("change", function () {
+        var fr = new FileReader();
+        fr.onload = function () {
+          let modelName = "Model";
+          lines = this.result.split(/\r\n|\n/);
+        };
 
-                fr.readAsText(this.files[0]);
-            })
+        fr.readAsText(this.files[0]);
+      });
 
-        function Gen_Obj() {
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            for (var line = 0; line < lines.length - 1; line++) {
+      function Gen_Obj() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        for (var line = 0; line < lines.length - 1; line++) {
+          let title = lines[line].split("=")[0].trim(); //title
+          let prop = lines[line].split("=")[1].trim(); //property
+          let dataType = lines[line].split("=")[3].trim(); //date , number, string
 
-                let title = lines[line].split("=")[0].trim(); //title
-                let prop = lines[line].split("=")[1].trim(); //property
-                let dataType = lines[line].split("=")[3].trim(); //date , number, string
-
-                //them summery
-                resultString += `
+          //them summery
+          resultString += `
                                         /// <summary>
                                         /// ${title}
                                         /// </summary>
                                         `;
-                if (dataType == "number" || dataType == "decimal") {
-                    resultString += `public decimal ${prop} { get; set; }`;
+          if (dataType == "number" || dataType == "decimal") {
+            resultString += `public decimal ${prop} { get; set; }`;
+          } else if (dataType == "date" || dataType == "DateTime") {
+            resultString += `public DateTime ${prop} { get; set; }`;
+          } else {
+            resultString += `public string ${prop} { get; set; }`;
+          }
 
-                } else if (dataType == "date" || dataType == "DateTime") {
-                    resultString += `public DateTime ${prop} { get; set; }`;
-
-                } else {
-                    resultString += `public string ${prop} { get; set; }`;
-                }
-
-                resultString += "\n";
-                console.log(line + " --> " + lines[line]);
-
-            }
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
+          resultString += "\n";
+          console.log(line + " --> " + lines[line]);
         }
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
 
-        function Gen_Detail() {
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            for (var line = 0; line < lines.length - 1; line++) {
-                let first = lines[line].split("=")[0].trim();
-                let second = lines[line].split("=")[1].trim();
-                let dataType = lines[line].split("=")[3].trim(); //date , number, string
+      function Gen_Detail() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        for (var line = 0; line < lines.length - 1; line++) {
+          let first = lines[line].split("=")[0].trim();
+          let second = lines[line].split("=")[1].trim();
+          let dataType = lines[line].split("=")[3].trim(); //date , number, string
 
-                resultString += `<div class="col-lg-12">
+          resultString += `<div class="col-lg-12">
                                         <div class="flex-report">
                                             <div class="title-report">${first}</div>
                                             <div class="field-report">`;
-                if (dataType == "number" || dataType == "decimal") {
-                    resultString += `<input class="ip-popup" type="text" value="@item.${second}.ToNumberStringN10()" readonly>`;
-                } else if (dataType == "date" || dataType == "DateTime") {
-                    resultString += `<input class="ip-popup" type="text" value="@item.${second}.ToDateStringN0()" readonly>`;
-                } else {
-                    resultString += `<input class="ip-popup" type="text" value="@item.${second}" readonly>`;
-                }
-                resultString += `
+          if (dataType == "number" || dataType == "decimal") {
+            resultString += `<input class="ip-popup" type="text" value="@item.${second}.ToNumberStringN10()" readonly>`;
+          } else if (dataType == "date" || dataType == "DateTime") {
+            resultString += `<input class="ip-popup" type="text" value="@item.${second}.ToDateStringN0()" readonly>`;
+          } else {
+            resultString += `<input class="ip-popup" type="text" value="@item.${second}" readonly>`;
+          }
+          resultString += `
                                               </div>
                                         </div>
                                     </div>`;
-                resultString += "\n";
-                console.log(line + " --> " + lines[line]);
-
-            }
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
+          resultString += "\n";
+          console.log(line + " --> " + lines[line]);
         }
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
 
-        function Gen_Table() {
-            document.getElementById('output').textContent = '';
-            resultString = ""
-            //Generate table
-            var resultString1 = ""; //render-table-header
-            var resultString2 = ""; //render-table-body
-            const modelName = "item";
-            for (var line = 0; line < lines.length - 1; line++) {
-                //first = name as text
-                //second = name as object
-                //third = data-sort ?
-                //forth = data-type
-                console.log(lines[line].split("="));
-                let first = lines[line].split("=")[0].trim();
-                let second = lines[line].split("=")[1].trim();
-                let third = lines[line].split("=")[2].trim() == 1 ? `data-sort="${second}"` : "";
-                let forth = lines[line].split("=")[3].trim();
-                resultString1 += `<th ${third}>${first}</th>` + "\n";
-                resultString2 += `<td ${getAlign(forth)}>${getRenderItem(modelName, second, forth)}</td>` + "\n";
-            }
-            resultString = `<div class="over-flow-x">
+      function Gen_Table() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        //Generate table
+        var resultString1 = ""; //render-table-header
+        var resultString2 = ""; //render-table-body
+        const modelName = "item";
+        for (var line = 0; line < lines.length - 1; line++) {
+          //first = name as text
+          //second = name as object
+          //third = data-sort ?
+          //forth = data-type
+          console.log(lines[line].split("="));
+          let first = lines[line].split("=")[0].trim();
+          let second = lines[line].split("=")[1].trim();
+          let third = lines[line].split("=")[2].trim() == 1 ? `data-sort="${second}"` : "";
+          let forth = lines[line].split("=")[3].trim();
+          resultString1 += `<th ${third}>${first}</th>` + "\n";
+          resultString2 += `<td ${getAlign(forth)}>${getRenderItem(modelName, second, forth)}</td>` + "\n";
+        }
+        resultString = `<div class="over-flow-x">
                                     <div class="wrapper-editor scroll-tbl tbl-record">
                                         <table id="test-tb" cellspacing="0">
                                             <thead>
@@ -176,317 +184,322 @@
                                         </table>
                                     </div>
                                 </div>`;
-            resultString += "\n";
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
+        resultString += "\n";
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
+
+      function Get_Title() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        for (var line = 0; line < lines.length - 1; line++) {
+          let title = lines[line].split("=")[0].trim(); //title
+          let prop = lines[line].split("=")[1].trim(); //property
+          let dataType = lines[line].split("=")[3].trim(); //date , number, string
+
+          //them summery
+          resultString += `${title}\n`;
         }
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
 
-        function Get_Title() {
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            for (var line = 0; line < lines.length - 1; line++) {
+      function Get_Export() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        for (var line = 0; line < lines.length - 1; line++) {
+          let title = lines[line].split("=")[0].trim(); //title
+          let prop = lines[line].split("=")[1].trim(); //property
+          let dataType = lines[line].split("=")[3].trim(); //date , number, string
 
-                let title = lines[line].split("=")[0].trim(); //title
-                let prop = lines[line].split("=")[1].trim(); //property
-                let dataType = lines[line].split("=")[3].trim(); //date , number, string
-
-                //them summery
-                resultString += `${title}\n`;
-            }
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
+          //them summery
+          if (dataType == "date" || dataType == "DateTime") {
+            resultString += `<#if(<#DT.${prop}>=0;;<#DT.${prop}>)>\n`;
+          } else {
+            resultString += `<#DT.${prop}>\n`;
+          }
         }
-
-        function Get_Export() {
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            for (var line = 0; line < lines.length - 1; line++) {
-
-                let title = lines[line].split("=")[0].trim(); //title
-                let prop = lines[line].split("=")[1].trim(); //property
-                let dataType = lines[line].split("=")[3].trim(); //date , number, string
-
-                //them summery
-                if (dataType == "date" || dataType == "DateTime") {
-                    resultString += `<#if(<#DT.${prop}>=0;;<#DT.${prop}>)>\n`;
-                } else {
-                    resultString += `<#DT.${prop}>\n`;
-                }
-            }
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
+      // bangtt
+      function Gen_ResourceDictionary_v1() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        element_Arr = lines[0].split(",");
+        for (let i = 0; i < element_Arr.length; i++) {
+          resultString += `<sys:String x:Key="issueqttymain">${element_Arr[i].trim()}</sys:String>\n`;
         }
-        // bangtt
-        function Gen_ResourceDictionary_v1(){
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            element_Arr = lines[0].split(",");
-            for(let i = 0; i < element_Arr.length; i++){
-                resultString += `<sys:String x:Key="issueqttymain">${element_Arr[i].trim()}</sys:String>\n`;
-            }
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
-        }
-        // bangtt
-        function Gen_DataGridTextColumn_v1(){
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            for (var line = 0; line < lines.length - 1; line++) {
-
-                let binding = lines[line].split("=")[0].trim(); 
-                let dynamicResource = lines[line].split("=")[1].trim(); 
-                resultString += `<DataGridTextColumn Binding="{Binding ${binding}}" IsReadOnly="True" Width="160" ElementStyle="{DynamicResource ElementStyle_VerticalAlignment}">
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
+      // bangtt
+      function Gen_DataGridTextColumn_v1() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        for (var line = 0; line < lines.length - 1; line++) {
+          let binding = lines[line].split("=")[0].trim();
+          let dynamicResource = lines[line].split("=")[1].trim();
+          resultString += `<DataGridTextColumn Binding="{Binding ${binding}}" IsReadOnly="True" Width="160" ElementStyle="{DynamicResource ElementStyle_VerticalAlignment}">
                                     <DataGridTextColumn.Header>
                                         <Label Content="${dynamicResource}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
                                     </DataGridTextColumn.Header>
                                 </DataGridTextColumn> \n`;
-            }
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
         }
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
 
-        function Detail_Textbox_To_Line() {
-            document.getElementById('output').textContent = '';
-            resultString = ""
-            //Generate table
-            var resultString1 = ""; //render-table-header
-            var resultString2 = ""; //render-table-body
-            const modelName = "item";
-            for (var line = 0; line < lines.length - 1; line++) {
-                //<label>abc</label> ---> tách lấy abc
-                var _idx_from = lines[line].indexOf('<label>'); 
-                var _idx_to = lines[line].indexOf('</label>');
-                if(_idx_from >= 0 && _idx_to > 0) {
-                    var _cl_name = lines[line].substring(_idx_from,_idx_to).replace('<label>','').trim();
+      function Detail_Textbox_To_Line() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        //Generate table
+        var resultString1 = ""; //render-table-header
+        var resultString2 = ""; //render-table-body
+        const modelName = "item";
+        for (var line = 0; line < lines.length - 1; line++) {
+          //<label>abc</label> ---> tách lấy abc
+          var _idx_from = lines[line].indexOf("<label>");
+          var _idx_to = lines[line].indexOf("</label>");
+          if (_idx_from >= 0 && _idx_to > 0) {
+            var _cl_name = lines[line].substring(_idx_from, _idx_to).replace("<label>", "").trim();
 
-                    resultString1 += `<div class="row">
+            resultString1 += `<div class="row">
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-5"><div class="title-info">${_cl_name}`;
-                }
-                
-                var _idx_value_from = lines[line].indexOf('value=\"'); 
-                var _idx_value_to = lines[line].indexOf('\" class');
-                if(_idx_value_from > 0 && _idx_value_to> 0){
-                    var _value = lines[line].substring(_idx_value_from,_idx_value_to).replace('value=\"','').trim();
-                    resultString1+=`</div></div>
+          }
+
+          var _idx_value_from = lines[line].indexOf('value="');
+          var _idx_value_to = lines[line].indexOf('" class');
+          if (_idx_value_from > 0 && _idx_value_to > 0) {
+            var _value = lines[line].substring(_idx_value_from, _idx_value_to).replace('value="', "").trim();
+            resultString1 +=
+              `</div></div>
                                             <div class="col-lg-7"><div class="value-info">${_value}</div></div>
                                         </div>
                                     </div>
                                     </div>` + "\n";
-                }
-            }
-            resultString = `${resultString1}`;
-            resultString += "\n";
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
+          }
+        }
+        resultString = `${resultString1}`;
+        resultString += "\n";
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
+
+      function getAlign(dataType) {
+        let result = "";
+        if (dataType == "number" || dataType == "decimal") {
+          result = `class="text-right"`;
+        } else if (dataType == "date" || dataType == "DateTime") {
+          result = `class="text-center"`;
+        } else {
+          result = ``;
+        }
+        return result;
+      }
+
+      function getRenderItem(modelName, propName, dataType) {
+        let result = "";
+        if (dataType == "number" || dataType == "decimal") {
+          result = `@${modelName}.${propName}.ToString("#,##0")`;
+        } else if (dataType == "date" || dataType == "DateTime") {
+          result = `@${modelName}.${propName}.ToDateStringN0()`;
+        } else {
+          result = `@${modelName}.${propName}`;
+        }
+        return result;
+      }
+
+      function copyStringToClipboard(str) {
+        // Create new element
+        var el = document.createElement("textarea");
+        // Set value (string to be copied)
+        el.value = str;
+        // Set non-editable to avoid focus and move outside of view
+        el.setAttribute("readonly", "");
+        el.style = { position: "absolute", left: "-9999px" };
+        document.body.appendChild(el);
+        // Select text inside element
+        el.select();
+        // Copy text to clipboard
+        document.execCommand("copy");
+        // Remove temporary element
+        document.body.removeChild(el);
+      }
+
+      function Get_Sort_Column_Search() {
+        //<td>@item.Foundation_No</td>
+        //<td class="text-center">@item.Foundation_Date.ToDateStringN0()</td>
+
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        for (var line = 0; line < lines.length; line++) {
+          //chuyen </td> thanh .</td>
+          let temp = lines[line];
+          console.log(temp);
+          let s = temp.slice(0, temp.indexOf("</td>")) + "." + temp.slice(temp.indexOf("</td>"));
+          let prop_idx_from = s.indexOf("."); //item.Foundation_No.</td>
+          let prop_idx_to = s.indexOf(".", prop_idx_from + 1);
+          console.log(s);
+          console.log("prop_idx_from: " + prop_idx_from);
+          console.log("prop_idx_to: " + prop_idx_to);
+          //substring property can lay:
+          let property = s.substring(prop_idx_from + 1, prop_idx_to);
+
+          //them summery
+          resultString += `data-sort="${property}"\n`;
+          console.log(line + " --> " + lines[line]);
+          debugger;
+        }
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
+
+      function Gen_Wpf_View() {
+        var columns = document.getElementById("common-number-inpt").value;
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        var rowDefinitions = "";
+        var columnDefinitions = "";
+
+        //Render ColumnDefinition
+        var numberOfColumns = 1;
+        if (columns == "" || columns.toString() == "") {
+          numberOfColumns = 2;
+        } else {
+          numberOfColumns = columns;
+        }
+        for (let i = 0; i < numberOfColumns * 2; i++) {
+          columnDefinitions += `<ColumnDefinition/> \n`;
         }
 
-
-        function getAlign(dataType) {
-            let result = "";
-            if (dataType == "number" || dataType == "decimal") {
-                result = `class="text-right"`;
-            } else if (dataType == "date" || dataType == "DateTime") {
-                result = `class="text-center"`;
+        //Render RowDefinition
+        var numberOfRows = Math.ceil(lines.length / numberOfColumns);
+        for (let i = 0; i < numberOfRows; i++) {
+          rowDefinitions += `<RowDefinition Height="28"/> \n`;
+        }
+        //Render load_cbo method
+        var loadCbo = "";
+        //Render load_data method
+        var loadData = "";
+        //Render check_validate method
+        var checkValidate = "";
+        //Render submit_data method
+        var submitData = "";
+        //Ten mac dinh cua object chua du lieu
+        var defaultObjectName = "objView";
+        //Render label and element
+        var elementResult = "";
+        var j = 0;
+        var k = 0;
+        //Set height cho TextBox de khop voi default height cua ComboBox
+        var defaultTxtHeight = `Height="22"`;
+        //Set margin cho CheckBox de thang hang voi Label
+        var defaultCheckBoxMargin = `Margin="0,5,0,0"`;
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].toString() !== "") {
+            var labelName = lines[i].split("=")[0].trim();
+            var elementType = lines[i].split("=")[1].trim().toLowerCase();
+            var elementNameRaw = lines[i].split("=")[2].trim();
+            var elementName = "";
+            //XAML Grid data
+            if (k >= numberOfRows) {
+              k = 0;
+              j = j + 2;
+            }
+            elementResult += `<Label Content="${labelName}: " Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${
+              i + 1
+            }" VerticalAlignment="Center" /> \n`;
+            if (elementType == "textbox") {
+              elementName = "txt" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`;
+            } else if (elementType == "combobox") {
+              elementName = "cbo" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<ComboBox IsHitTestVisible="False" Focusable="False" Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/> \n`;
+            } else if (elementType == "checkbox") {
+              elementName = "ckbox" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<CheckBox IsHitTestVisible="False" Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" Height="16" HorizontalAlignment="Left" Name="${elementName}" VerticalAlignment="Center" IsTabStop="False" ${defaultCheckBoxMargin}/>`;
+            } else if (elementType == "date") {
+              elementName = "txt" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`;
+            } else if (elementType == "multiple select") {
+              elementName = "lbox" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<ListBox IsHitTestVisible="False" Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" Name="${elementName}" SelectionMode="Multiple" />`;
             } else {
-                result = ``;
+              elementName = "txt" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`;
             }
-            return result;
-        }
+            elementResult += "\n \n";
+            k++;
 
-        function getRenderItem(modelName, propName, dataType) {
-            let result = "";
-            if (dataType == "number" || dataType == "decimal") {
-                result = `@${modelName}.${propName}.ToString("#,##0")`;
-            } else if (dataType == "date" || dataType == "DateTime") {
-                result = `@${modelName}.${propName}.ToDateStringN0()`;
-            } else {
-                result = `@${modelName}.${propName}`;
-            }
-            return result;
-        }
-
-        function copyStringToClipboard(str) {
-            // Create new element
-            var el = document.createElement('textarea');
-            // Set value (string to be copied)
-            el.value = str;
-            // Set non-editable to avoid focus and move outside of view
-            el.setAttribute('readonly', '');
-            el.style = { position: 'absolute', left: '-9999px' };
-            document.body.appendChild(el);
-            // Select text inside element
-            el.select();
-            // Copy text to clipboard
-            document.execCommand('copy');
-            // Remove temporary element
-            document.body.removeChild(el);
-        }
-
-        function Get_Sort_Column_Search() {
-
-            //<td>@item.Foundation_No</td>
-            //<td class="text-center">@item.Foundation_Date.ToDateStringN0()</td>
-            
-            
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            for (var line = 0; line < lines.length ; line++) {
-
-                //chuyen </td> thanh .</td>
-                let temp = lines[line];
-                console.log(temp);
-                let s = temp.slice(0, temp.indexOf('</td>')) + "." + temp.slice(temp.indexOf('</td>'));
-                let prop_idx_from = s.indexOf('.'); //item.Foundation_No.</td>
-                let prop_idx_to = s.indexOf('.',prop_idx_from+1)
-                console.log(s);
-                console.log('prop_idx_from: ' + prop_idx_from);
-                console.log('prop_idx_to: ' + prop_idx_to);
-                //substring property can lay: 
-                let property = s.substring(prop_idx_from+1,prop_idx_to);
-
-                //them summery
-                resultString += `data-sort="${property}"\n`;
-                console.log(line + " --> " + lines[line]);
-                debugger;
-
-            }
-            console.log(resultString)
-            document.getElementById('output').textContent = resultString;
-            copyStringToClipboard(resultString);
-            alert("Done!");
-        }
-
-        function Gen_Wpf_View(){
-            var columns = document.getElementById('common-number-inpt').value;
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            var rowDefinitions = "";
-            var columnDefinitions = "";
-            
-            //Render ColumnDefinition
-            var numberOfColumns = 1;
-            if(columns == "" || columns.toString() == ""){
-                numberOfColumns = 2;
-            }else{
-                numberOfColumns = columns;
-            }
-            for(let i = 0; i < (numberOfColumns * 2); i++){
-                columnDefinitions += `<ColumnDefinition/> \n`;
-            }
-
-            //Render RowDefinition
-            var numberOfRows = Math.ceil(lines.length / numberOfColumns);
-            for(let i = 0; i < numberOfRows; i++){
-                rowDefinitions += `<RowDefinition Height="28"/> \n`;
-            }
-            //Render load_cbo method
-            var loadCbo = "";
-            //Render load_data method 
-            var loadData = "";
-            //Render check_validate method
-            var checkValidate = "";
-            //Render submit_data method
-            var submitData = "";
-            //Ten mac dinh cua object chua du lieu 
-            var defaultObjectName = "objView";
-            //Render label and element
-            var elementResult = "";
-            var j = 0;
-            var k = 0;
-            //Set height cho TextBox de khop voi default height cua ComboBox
-            var defaultTxtHeight = `Height="22"`;
-            //Set margin cho CheckBox de thang hang voi Label
-            var defaultCheckBoxMargin = `Margin="0,5,0,0"`;
-            for(let i = 0; i < lines.length; i++){
-                if(lines[i].toString() !== ''){
-                    var labelName = lines[i].split("=")[0].trim();
-                    var elementType = lines[i].split("=")[1].trim().toLowerCase();
-                    var elementNameRaw = lines[i].split("=")[2].trim();
-                    var elementName = "";
-                    //XAML Grid data
-                    if(k >= numberOfRows){
-                        k = 0;
-                        j = j + 2;
-                    }
-                    elementResult += `<Label Content="${labelName}: " Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${i + 1}" VerticalAlignment="Center" /> \n`;
-                    if(elementType == "textbox"){
-                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`
-                    }else if(elementType == "combobox"){
-                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<ComboBox IsHitTestVisible="False" Focusable="False" Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center"/> \n`;
-                    }else if(elementType == "checkbox"){
-                        elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<CheckBox IsHitTestVisible="False" Grid.Row="${k}" Grid.Column="${j + 1}" Height="16" HorizontalAlignment="Left" Name="${elementName}" VerticalAlignment="Center" IsTabStop="False" ${defaultCheckBoxMargin}/>`;
-                    }else if(elementType == "date"){
-                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`
-                    }else if(elementType == "multiple select"){
-                        elementName = "lbox" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<ListBox IsHitTestVisible="False" Grid.Row="${k}" Grid.Column="${j + 1}" Name="${elementName}" SelectionMode="Multiple" />`
-                    }
-                    else{
-                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<TextBox IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`
-                    }
-                    elementResult += "\n \n";
-                    k++;
-
-                    //Load_cbo
-                    if(elementType == "combobox"){
-                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
-                        loadCbo += `//${elementName + " - " + labelName}
+            //Load_cbo
+            if (elementType == "combobox") {
+              elementName = "cbo" + elementNameRaw.replaceAll("_", "");
+              loadCbo += `//${elementName + " - " + labelName}
                         List<AllcodeInfo> _allcodecon_${i} = AllCodeController.AllCode_GetBy_CdNameCdType("TS_SYMBOL", "STATUS");
                         ${elementName}.ItemsSource = _allcodecon${i};
                         ${elementName}.DisplayMemberPath = "Code";
                         ${elementName}.SelectedValuePath = "Id"; 
                         \n`;
-                    }
+            }
 
-                    //Load_data
-                    if(elementType == "textbox"){
-                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                        loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
-                    }else if(elementType == "combobox"){
-                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
-                        loadData += `${elementName}.SelectedValue = ${defaultObjectName}.${elementNameRaw}; \n`;
-                    }else if(elementType == "checkbox"){
-                        elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
-                        loadData += `if(${defaultObjectName}.${elementNameRaw}.ToString() == "0"//Condition here){
+            //Load_data
+            if (elementType == "textbox") {
+              elementName = "txt" + elementNameRaw.replaceAll("_", "");
+              loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
+            } else if (elementType == "combobox") {
+              elementName = "cbo" + elementNameRaw.replaceAll("_", "");
+              loadData += `${elementName}.SelectedValue = ${defaultObjectName}.${elementNameRaw}; \n`;
+            } else if (elementType == "checkbox") {
+              elementName = "ckbox" + elementNameRaw.replaceAll("_", "");
+              loadData += `if(${defaultObjectName}.${elementNameRaw}.ToString() == "0"//Condition here){
                                         ${elementName}.IsChecked = true;
                                     }else{
                                         ${elementName}.IsChecked = false;
                                     } \n`;
-                    }else if(elementType == "date"){
-                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                        loadData += `${elementName}.Text = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
-                    }else if(elementType == "multiple select"){
-                        elementName = "lbox" + elementNameRaw.replaceAll('_', '');
-                        loadData += `${elementName}.ItemSource = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
-                    }
-                    else{
-                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                        loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
-                    }
-                }
+            } else if (elementType == "date") {
+              elementName = "txt" + elementNameRaw.replaceAll("_", "");
+              loadData += `${elementName}.Text = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
+            } else if (elementType == "multiple select") {
+              elementName = "lbox" + elementNameRaw.replaceAll("_", "");
+              loadData += `${elementName}.ItemSource = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
+            } else {
+              elementName = "txt" + elementNameRaw.replaceAll("_", "");
+              loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
             }
-            //Combine
-            //Grid
-            resultString += `<Grid>
+          }
+        }
+        //Combine
+        //Grid
+        resultString += `<Grid>
                                 <Grid.RowDefinitions>
                                     ${rowDefinitions}
                                 </Grid.RowDefinitions>
@@ -495,175 +508,190 @@
                                 </Grid.ColumnDefinitions>
                                 ${elementResult}
                             </Grid>`;
-            
-            copyStringToClipboard(resultString);
-            //Load_data
-            resultString += `\n \n --------------------Load_data---------------------- \n \n`
 
-            resultString += loadData + "\n";
+        copyStringToClipboard(resultString);
+        //Load_data
+        resultString += `\n \n --------------------Load_data---------------------- \n \n`;
 
-            //Load_cbo
-            resultString += `\n \n --------------------Load_cbo---------------------- \n \n`
+        resultString += loadData + "\n";
 
-            resultString += loadCbo + "\n";
+        //Load_cbo
+        resultString += `\n \n --------------------Load_cbo---------------------- \n \n`;
 
-            document.getElementById('output').textContent = resultString;
-            alert("Done!");
+        resultString += loadCbo + "\n";
+
+        document.getElementById("output").textContent = resultString;
+        alert("Done!");
+      }
+
+      function Gen_Wpf_Insert() {
+        var columns = document.getElementById("common-number-inpt").value;
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        var rowDefinitions = "";
+        var columnDefinitions = "";
+
+        //Render ColumnDefinition
+        var numberOfColumns = 1;
+        if (columns == "" || columns.toString() == "") {
+          numberOfColumns = 2;
+        } else {
+          numberOfColumns = columns;
+        }
+        for (let i = 0; i < numberOfColumns * 2; i++) {
+          columnDefinitions += `<ColumnDefinition/> \n`;
         }
 
-        function Gen_Wpf_Insert(){
-            var columns = document.getElementById('common-number-inpt').value;
-            document.getElementById('output').textContent = '';
-            resultString = "";
-            var rowDefinitions = "";
-            var columnDefinitions = "";
-            
-            //Render ColumnDefinition
-            var numberOfColumns = 1;
-            if(columns == "" || columns.toString() == ""){
-                numberOfColumns = 2;
-            }else{
-                numberOfColumns = columns;
+        //Render RowDefinition
+        var numberOfRows = Math.ceil(lines.length / numberOfColumns);
+        for (let i = 0; i < numberOfRows; i++) {
+          rowDefinitions += `<RowDefinition Height="28"/> \n`;
+        }
+        //Required field
+        var defaultRequiredField = `<TextBox Foreground="Red" BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" BorderThickness="0">*</TextBox>`;
+        //Render load_cbo method
+        var loadCbo = "";
+        //Render load_data method
+        var loadData = "";
+        //Ten mac dinh cua object chua du lieu
+        var defaultObjectName = "objView";
+        //Render label and element
+        var elementResult = "";
+        var j = 0;
+        var k = 0;
+        //Set height cho TextBox de khop voi default height cua ComboBox
+        var defaultTxtHeight = `Height="22"`;
+        //Set margin cho CheckBox de thang hang voi Label
+        var defaultCheckBoxMargin = `Margin="0,5,0,0"`;
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].toString() !== "") {
+            var labelName = lines[i].split("=")[0].trim();
+            var elementType = lines[i].split("=")[1].trim().toLowerCase();
+            var elementNameRaw = lines[i].split("=")[2].trim();
+            var isRequired = lines[i].split("=")[3].trim() == "M" ? true : false;
+            var requiredField = lines[i].split("=")[3].trim() == "M" ? defaultRequiredField : "";
+            var elementName = "";
+            //XAML Grid data
+            if (k >= numberOfRows) {
+              k = 0;
+              j = j + 2;
             }
-            for(let i = 0; i < (numberOfColumns * 2); i++){
-                columnDefinitions += `<ColumnDefinition/> \n`;
-            }
-
-            //Render RowDefinition
-            var numberOfRows = Math.ceil(lines.length / numberOfColumns);
-            for(let i = 0; i < numberOfRows; i++){
-                rowDefinitions += `<RowDefinition Height="28"/> \n`;
-            }
-            //Required field
-            var defaultRequiredField = `<TextBox Foreground="Red" BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" BorderThickness="0">*</TextBox>`;
-            //Render load_cbo method
-            var loadCbo = "";
-            //Render load_data method 
-            var loadData = "";
-            //Ten mac dinh cua object chua du lieu 
-            var defaultObjectName = "objView";
-            //Render label and element
-            var elementResult = "";
-            var j = 0;
-            var k = 0;
-            //Set height cho TextBox de khop voi default height cua ComboBox
-            var defaultTxtHeight = `Height="22"`;
-            //Set margin cho CheckBox de thang hang voi Label
-            var defaultCheckBoxMargin = `Margin="0,5,0,0"`;
-            for(let i = 0; i < lines.length; i++){
-                if(lines[i].toString() !== ''){
-                    var labelName = lines[i].split("=")[0].trim();
-                    var elementType = lines[i].split("=")[1].trim().toLowerCase();
-                    var elementNameRaw = lines[i].split("=")[2].trim();
-                    var isRequired = lines[i].split("=")[3].trim() == "M" ? true : false;
-                    var requiredField = lines[i].split("=")[3].trim() == "M" ? defaultRequiredField : "";
-                    var elementName = "";
-                    //XAML Grid data
-                    if(k >= numberOfRows){
-                        k = 0;
-                        j = j + 2;
-                    }
-                    elementResult += `<!--${labelName}-->
-                                    <Label Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${i + 1}" VerticalAlignment="Center">
+            elementResult += `<!--${labelName}-->
+                                    <Label Grid.Row="${k}" Grid.Column="${j}" HorizontalAlignment="Right" Name="label${
+              i + 1
+            }" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBox BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" BorderThickness="0">${labelName}</TextBox>
                                             ${requiredField}
                                             <TextBox BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" BorderThickness="0">:</TextBox>
                                         </StackPanel>
                                     </Label> \n`;
-                    if(elementType == "textbox"){
-                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<TextBox Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight} TabIndex="${i}"/>`
-                    }else if(elementType == "combobox"){
-                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<ComboBox Focusable="False" IsEditable="True" IsReadOnly="True" Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" Text="-- Chọn ${labelName} --"/> \n`;
-                    }else if(elementType == "checkbox"){
-                        elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<CheckBox Grid.Row="${k}" Grid.Column="${j + 1}" Height="16" HorizontalAlignment="Left" Name="${elementName}" VerticalAlignment="Center" IsTabStop="False" ${defaultCheckBoxMargin}/>`;
-                    }else if(elementType == "date"){
-                        elementName = "dtp" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<DatePicker Grid.Row="${k}" Grid.Column="${j + 1}" HorizontalAlignment="Left" Name="${elementName}" 
+            if (elementType == "textbox") {
+              elementName = "txt" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<TextBox Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight} TabIndex="${i}"/>`;
+            } else if (elementType == "combobox") {
+              elementName = "cbo" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<ComboBox Focusable="False" IsEditable="True" IsReadOnly="True" Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" Text="-- Chọn ${labelName} --"/> \n`;
+            } else if (elementType == "checkbox") {
+              elementName = "ckbox" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<CheckBox Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" Height="16" HorizontalAlignment="Left" Name="${elementName}" VerticalAlignment="Center" IsTabStop="False" ${defaultCheckBoxMargin}/>`;
+            } else if (elementType == "date") {
+              elementName = "dtp" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<DatePicker Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" HorizontalAlignment="Left" Name="${elementName}" 
                                                 VerticalAlignment="Center" Width="150" SelectedDateChanged="datetimePicker_SelectedDateChanged"
                                                 PreviewKeyDown="DatePicker_Keydown" Mouse.PreviewMouseDown="datetimePicker_PreviewMouseDown"
-                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>`
-                    }else if(elementType == "multiple select"){
-                        elementName = "lbox" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<ListBox Grid.Row="${k}" Grid.Column="${j + 1}" Name="${elementName}" SelectionMode="Multiple" />`
-                    }
-                    else{
-                        elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                        elementResult += `<TextBox  Grid.Row="${k}" Grid.Column="${j + 1}" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`
-                    }
-                    elementResult += "\n \n";
-                    k++;
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>`;
+            } else if (elementType == "multiple select") {
+              elementName = "lbox" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<ListBox Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" Name="${elementName}" SelectionMode="Multiple" />`;
+            } else {
+              elementName = "txt" + elementNameRaw.replaceAll("_", "");
+              elementResult += `<TextBox  Grid.Row="${k}" Grid.Column="${
+                j + 1
+              }" TextWrapping="Wrap" HorizontalAlignment="Stretch" Name="${elementName}" VerticalAlignment="Center" ${defaultTxtHeight}/>`;
+            }
+            elementResult += "\n \n";
+            k++;
 
-                    //Load_cbo
-                    if(elementType == "combobox"){
-                        elementName = "cbo" + elementNameRaw.replaceAll('_', '');
-                        loadCbo += `//${elementName}
-                        List<AllCodeInfo> _allcode${elementNameRaw.replaceAll('_', '') + "_Source"} =DBMemory.AllCode_GetBy_CdNameCdType("CB_SYMBOL", "${elementNameRaw.toUpperCase()}");
-                        ${elementName}.ItemsSource =  _allcode${elementNameRaw.replaceAll('_', '') + "_Source"};
+            //Load_cbo
+            if (elementType == "combobox") {
+              elementName = "cbo" + elementNameRaw.replaceAll("_", "");
+              loadCbo += `//${elementName}
+                        List<AllCodeInfo> _allcode${
+                          elementNameRaw.replaceAll("_", "") + "_Source"
+                        } =DBMemory.AllCode_GetBy_CdNameCdType("CB_SYMBOL", "${elementNameRaw.toUpperCase()}");
+                        ${elementName}.ItemsSource =  _allcode${elementNameRaw.replaceAll("_", "") + "_Source"};
                         ${elementName}.DisplayMemberPath = "Content";
                         ${elementName}.SelectedValuePath = "CdVal"; 
                         \n`;
-                    }
-
-                    //Check_Validate
-        //             if(isRequired){
-        //                 if(elementType == "textbox"){
-        //                     resultString += `//${labelName}
-        //                                     if (${elementName}.Text.Trim() == "")
-        //                                     {
-        //                                         NoteBox.Show("${labelName} không được để trống", "", NoteBoxLevel.Error);
-        //                                         ${elementName}.Focus();
-        //                                         return false;
-        //                                     }`;
-        //                 }else if(elementType == "combobox"){
-        //                     if (cboIssuerID.SelectedItem == null)
-        // //    //    {
-        // //    //        NoteBox.Show(Common.Ultil.GetStringLeng("emptycboIssuer"), "", NoteBoxLevel.Error);
-        // //    //        cboIssuerID.Focus();
-        // //    //        return false;
-        // //    //    }
-        //                 }else if(elementType == "checkbox"){
-        //                 }else if(elementType == "date"){
-        //                 }else if(elementType == "multiple select"){
-                            
-        //                 }else{
-
-        //                 }
-        //             }
-
-                    // //Load_data
-                    // if(elementType == "textbox"){
-                    //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                    //     loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
-                    // }else if(elementType == "combobox"){
-                    //     elementName = "cbo" + elementNameRaw.replaceAll('_', '');
-                    //     loadData += `${elementName}.SelectedValue = ${defaultObjectName}.${elementNameRaw}; \n`;
-                    // }else if(elementType == "checkbox"){
-                    //     elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
-                    //     loadData += `if(${defaultObjectName}.${elementNameRaw}.ToString() == "0"//Condition here){
-                    //                     ${elementName}.IsChecked = true;
-                    //                 }else{
-                    //                     ${elementName}.IsChecked = false;
-                    //                 } \n`;
-                    // }else if(elementType == "date"){
-                    //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                    //     loadData += `${elementName}.Text = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
-                    // }else if(elementType == "multiple select"){
-                    //     elementName = "lbox" + elementNameRaw.replaceAll('_', '');
-                    //     loadData += `${elementName}.ItemSource = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
-                    // }
-                    // else{
-                    //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
-                    //     loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
-                    // }
-                }
             }
-            //Combine
-            //Grid
-            resultString += `<Grid>
+
+            //Check_Validate
+            //             if(isRequired){
+            //                 if(elementType == "textbox"){
+            //                     resultString += `//${labelName}
+            //                                     if (${elementName}.Text.Trim() == "")
+            //                                     {
+            //                                         NoteBox.Show("${labelName} không được để trống", "", NoteBoxLevel.Error);
+            //                                         ${elementName}.Focus();
+            //                                         return false;
+            //                                     }`;
+            //                 }else if(elementType == "combobox"){
+            //                     if (cboIssuerID.SelectedItem == null)
+            // //    //    {
+            // //    //        NoteBox.Show(Common.Ultil.GetStringLeng("emptycboIssuer"), "", NoteBoxLevel.Error);
+            // //    //        cboIssuerID.Focus();
+            // //    //        return false;
+            // //    //    }
+            //                 }else if(elementType == "checkbox"){
+            //                 }else if(elementType == "date"){
+            //                 }else if(elementType == "multiple select"){
+
+            //                 }else{
+
+            //                 }
+            //             }
+
+            // //Load_data
+            // if(elementType == "textbox"){
+            //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
+            //     loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
+            // }else if(elementType == "combobox"){
+            //     elementName = "cbo" + elementNameRaw.replaceAll('_', '');
+            //     loadData += `${elementName}.SelectedValue = ${defaultObjectName}.${elementNameRaw}; \n`;
+            // }else if(elementType == "checkbox"){
+            //     elementName = "ckbox" + elementNameRaw.replaceAll('_', '');
+            //     loadData += `if(${defaultObjectName}.${elementNameRaw}.ToString() == "0"//Condition here){
+            //                     ${elementName}.IsChecked = true;
+            //                 }else{
+            //                     ${elementName}.IsChecked = false;
+            //                 } \n`;
+            // }else if(elementType == "date"){
+            //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
+            //     loadData += `${elementName}.Text = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
+            // }else if(elementType == "multiple select"){
+            //     elementName = "lbox" + elementNameRaw.replaceAll('_', '');
+            //     loadData += `${elementName}.ItemSource = Common.ConvertData.ConvertDate2String(${defaultObjectName}.${elementNameRaw}); \n`;
+            // }
+            // else{
+            //     elementName = "txt" + elementNameRaw.replaceAll('_', '');
+            //     loadData += `${elementName}.Text = ${defaultObjectName}.${elementNameRaw}; \n`;
+            // }
+          }
+        }
+        //Combine
+        //Grid
+        resultString += `<Grid>
                                 <Grid.RowDefinitions>
                                     ${rowDefinitions}
                                 </Grid.RowDefinitions>
@@ -672,20 +700,64 @@
                                 </Grid.ColumnDefinitions>
                                 ${elementResult}
                             </Grid>`;
-            //Load_data
-            // resultString += `\n \n --------------------Load_data---------------------- \n \n`
+        //Load_data
+        // resultString += `\n \n --------------------Load_data---------------------- \n \n`
 
-            // resultString += loadData + "\n";
+        // resultString += loadData + "\n";
 
-            //Load_cbo
-            resultString += `\n \n --------------------Load_cbo---------------------- \n \n`
+        //Load_cbo
+        resultString += `\n \n --------------------Load_cbo---------------------- \n \n`;
 
-            resultString += loadCbo + "\n";
+        resultString += loadCbo + "\n";
 
-            document.getElementById('output').textContent = resultString;
-            alert("Done!");
+        document.getElementById("output").textContent = resultString;
+        alert("Done!");
+      }
+
+      function WordToExcel_1() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        for (var line = 0; line < lines.length; line++) {
+          let property = s.substring(prop_idx_from + 1, prop_idx_to);
+          var labelName = lines[i].split("=")[0].trim();
+
+          //them summery
+          resultString += `data-sort="${property}"\n`;
+          console.log(line + " --> " + lines[line]);
+          debugger;
         }
-    </script>
-</body>
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
 
+      function gen_change_view() {
+        document.getElementById("output").textContent = "";
+        resultString = "";
+        for (var line = 0; line < lines.length - 1; line++) {
+          //lần lượt các cột
+          let title = lines[line].split("=")[0].trim(); //title
+          let prop = lines[line].split("=")[1].trim(); //property
+
+          //them summery
+          resultString += `
+                    Sync_Compare_Info sync_${line + 1} = new Sync_Compare_Info();
+                    sync_${line + 1}.Title = "${title}";
+                    sync_${line + 1}.HTGD = _symbol_HTGD.${prop};
+                    sync_${line + 1}.Cbis = c_objSync.${prop};
+                    _lst_compare.Add(sync_${line + 1});
+                                        `;
+          resultString += "\n";
+          console.log(line + " --> " + lines[line]);
+        }
+        console.log(resultString);
+        document.getElementById("output").textContent = resultString;
+        copyStringToClipboard(resultString);
+        alert("Done!");
+      }
+    </script>
+    <script src="CommonFunc.js"></script>
+    <script src="gencodeTVSC.js"></script>
+  </body>
 </html>
