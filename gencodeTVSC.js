@@ -14,9 +14,20 @@ function Gen_FromQuery() {
 
   for (let i = 0; i < listPara.length; i++) {
     var param = listPara[i].trim();
-    var propType = param.trim().split(' ')[0]
-    var propName = param.trim().split(' ')[1];
-    _fromQuery += ` [FromQuery] ${propType == "DateTime" ? "string" : propType} ${propName},`;
+    var propType = "";
+    var propName = "";
+    var prefix = param.trim().split(' ')[0];
+    if (prefix != "ref") {
+      propType = param.trim().split(' ')[0]
+      propName = param.trim().split(' ')[1];
+      _fromQuery += ` [FromQuery] ${propType == "DateTime" ? "string" : propType} ${propName},`;
+
+    } else {
+      propType = param.trim().split(' ')[1]
+      propName = param.trim().split(' ')[2];
+      // _fromQuery += ` [FromQuery] ${prefix} ${propType == "DateTime" ? "string" : propType} ${propName},`;
+    }
+
   }
   _fromQuery = _fromQuery.trim();
   _fromQuery = _fromQuery.slice(0, _fromQuery.length - 1)//xoa dấu phẩy cuối cùng
@@ -31,14 +42,33 @@ function GenParamSendToDA() {
   var _result = '';
   for (let i = 0; i < listPara.length; i++) {
     var param = listPara[i].trim();
-    var propType = param.trim().split(' ')[0]
-    var propName = param.trim().split(' ')[1];
-    console.log(param);
-    if (propType == "DateTime") {
-      _result += ` _${propName}, `;
+    var propType = "";
+    var propName = "";
+    var prefix = param.trim().split(' ')[0];
+
+    if (prefix != "ref") {
+      propType = param.trim().split(' ')[0]
+      propName = param.trim().split(' ')[1];
+
+      if (propType == "DateTime") {
+        _result += ` _${propName}, `;
+      } else {
+        _result += ` ${propName}, `;
+      }
     } else {
-      _result += ` ${propName}, `;
+      propType = param.trim().split(' ')[1]
+      propName = param.trim().split(' ')[2];
+
+      if (propType == "DateTime") {
+        _result += `${prefix} _${propName}, `;
+      } else {
+        _result += `${prefix} ${propName}, `;
+      }
+
     }
+
+
+
   }
   _result = _result.trim();
   _result = _result.slice(0, _result.length - 1)//xoa dấu phẩy cuối cùng
@@ -53,15 +83,26 @@ function GenAddParmeter() {
   var _result = 'request.AddHeader("Authorization", $"Bearer {ConfigInfo.Token}");\n';
   for (let i = 0; i < listPara.length; i++) {
     var param = listPara[i].trim();
-    var propType = param.trim().split(' ')[0]
-    var propName = param.trim().split(' ')[1];
-    if (propType == 'DateTime') {
-      _result += `request.AddParameter("${propName}", ${propName}.ToDateTimeStringN0(), ParameterType.QueryString);\n`;
-    } else {
-      _result += `request.AddParameter("${propName}", ${propName}, ParameterType.QueryString);\n`;
+    var propType = "";
+    var propName = "";
+    var prefix = param.trim().split(' ')[0];
 
+    if (prefix != "ref") {
+      propType = param.trim().split(' ')[0]
+      propName = param.trim().split(' ')[1];
+
+      if (propType == 'DateTime') {
+        _result += `request.AddParameter("${propName}", ${propName}.ToDateTimeStringN0(), ParameterType.QueryString);\n`;
+      } else {
+        _result += `request.AddParameter("${propName}", ${propName}, ParameterType.QueryString);\n`;
+
+      }
+    } else {
+      propType = param.trim().split(' ')[1]
+      propName = param.trim().split(' ')[2];
     }
   }
+
   _result = _result.trim();
   copyStringToClipboard(_result);
 }
