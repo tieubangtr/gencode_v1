@@ -14,3 +14,17 @@ function copyStringToClipboard(str) {
   // Remove temporary element
   document.body.removeChild(el);
 }
+
+function toTitleCase(str) {
+  return str.replace(
+    /\w\S*/g,
+    function (txt) {
+      var rs = txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      return rs;
+    }
+  );
+}
+
+function capitalizeAfterUnderscore(input) {
+  return input.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('_');
+}

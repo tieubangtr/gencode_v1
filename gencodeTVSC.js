@@ -86,20 +86,21 @@ function GenAddParmeter() {
     var propType = "";
     var propName = "";
     var prefix = param.trim().split(' ')[0];
-
+    console.log("propType", propType);
     if (prefix != "ref") {
       propType = param.trim().split(' ')[0]
       propName = param.trim().split(' ')[1];
+    } else {
+      propType = param.trim().split(' ')[1]
+      propName = param.trim().split(' ')[2];
+    }
 
+    if (prefix != "ref" && propType != "DataSet" && propType != "DataTable") {
       if (propType == 'DateTime') {
         _result += `request.AddParameter("${propName}", ${propName}.ToDateTimeStringN0(), ParameterType.QueryString);\n`;
       } else {
         _result += `request.AddParameter("${propName}", ${propName}, ParameterType.QueryString);\n`;
-
       }
-    } else {
-      propType = param.trim().split(' ')[1]
-      propName = param.trim().split(' ')[2];
     }
   }
 
@@ -145,6 +146,121 @@ function GenStringToDateTime() {
 
 
   }
+  _result = _result.trim();
+  copyStringToClipboard(_result);
+}
+
+function GenClassObj() {
+  _textPara = document.getElementById("txtTVSC").value;
+  listPara = _textPara.split(',');
+  var _result = '';
+  for (let i = 0; i < listPara.length; i++) {
+    var param = listPara[i].trim();
+    var propType = "";
+    var propName = "";
+    var prefix = param.trim().split(' ')[0];
+
+    if (prefix != "ref") {
+      propType = param.trim().split(' ')[0]
+      propName = param.trim().split(' ')[1];
+    } else {
+      propType = param.trim().split(' ')[1]
+      propName = param.trim().split(' ')[2];
+    }
+
+    _result += `public ${propType} ${capitalizeAfterUnderscore(propName)} {get;set;}\n`;
+  }
+
+  _result = _result.trim();
+  copyStringToClipboard(_result);
+}
+
+function AssignReturnObj_Equal_Data() {
+  _textPara = document.getElementById("txtTVSC").value;
+  listPara = _textPara.split(',');
+  var _result = '';
+  for (let i = 0; i < listPara.length; i++) {
+    var param = listPara[i].trim();
+    var propType = "";
+    var propName = "";
+    var prefix = param.trim().split(' ')[0];
+
+    if (prefix != "ref") {
+      propType = param.trim().split(' ')[0]
+      propName = param.trim().split(' ')[1];
+    } else {
+      propType = param.trim().split(' ')[1]
+      propName = param.trim().split(' ')[2];
+    }
+
+    _result += `returnObj.${capitalizeAfterUnderscore(propName)} = ${propName};\n`;
+  }
+
+  _result = _result.trim();
+  copyStringToClipboard(_result);
+}
+
+
+function AssignData_Equal_ReturnObj() {
+  _textPara = document.getElementById("txtTVSC").value;
+  listPara = _textPara.split(',');
+  var _result = '';
+  for (let i = 0; i < listPara.length; i++) {
+    var param = listPara[i].trim();
+    var propType = "";
+    var propName = "";
+    var prefix = param.trim().split(' ')[0];
+
+    if (prefix != "ref") {
+      propType = param.trim().split(' ')[0]
+      propName = param.trim().split(' ')[1];
+    } else {
+      propType = param.trim().split(' ')[1]
+      propName = param.trim().split(' ')[2];
+    }
+    if (prefix == "ref") {
+      _result += `${propName} = returnObj.${capitalizeAfterUnderscore(propName)};\n`;
+    }
+  }
+
+  _result = _result.trim();
+  copyStringToClipboard(_result);
+}
+
+function DeclareRef() {
+  _textPara = document.getElementById("txtTVSC").value;
+  listPara = _textPara.split(',');
+  var _result = '';
+  for (let i = 0; i < listPara.length; i++) {
+    var defaultValue = "";
+    var param = listPara[i].trim();
+    var propType = "";
+    var propName = "";
+    var prefix = param.trim().split(' ')[0];
+
+    if (prefix != "ref") {
+      propType = param.trim().split(' ')[0]
+      propName = param.trim().split(' ')[1];
+    } else {
+      propType = param.trim().split(' ')[1]
+      propName = param.trim().split(' ')[2];
+    }
+
+
+
+    if (propType == "string") {
+      defaultValue = "\"\"";
+    } else if (propType == "decimal" || propType == "int") {
+      defaultValue = "0";
+    } else {
+      defaultValue = `new ${propType}()`;
+    }
+
+    if (prefix == "ref") {
+      _result += `${propType} ${propName} = ${defaultValue};\n`;
+    }
+  }
+
   _result = _result.trim();
   copyStringToClipboard(_result);
 }
